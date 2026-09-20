@@ -18,7 +18,7 @@ I added focused API coverage for assessment detail and narrative generation beca
 
 **Classification:** product / API validation
 
-**Evidence:** the inherited CI run posts an empty content value and expects 422, but the API returns 200. The NoteCreate model declares plain strings with no minimum length, while the UI independently prevents blank submissions.
+**Evidence:** both the supplied baseline and this PR's GitHub Actions run post an empty content value and expect 422, but the API returns 200. The NoteCreate model declares plain strings with no minimum length, while the UI independently prevents blank submissions.
 
 **Decision:** keep the failing API test. Weakening it to expect 200 would hide an API/UI consistency and data-quality risk. I would clarify the contract with the product/backend owner and, if blank notes are invalid as the UI indicates, add server-side validation.
 
@@ -26,7 +26,7 @@ I added focused API coverage for assessment detail and narrative generation beca
 
 **Classification:** product
 
-**Evidence:** seed data for Alex Thompson contains date_administered 2024-01-15, while the inherited CI run renders Jan 14, 2024 under the configured America/New_York timezone. AssessmentList.tsx constructs a JavaScript Date from the date-only value, which treats it as UTC before local formatting.
+**Evidence:** seed data for Alex Thompson contains date_administered 2024-01-15, while both the supplied baseline and this PR's GitHub Actions run render Jan 14, 2024 under the configured America/New_York timezone. AssessmentList.tsx constructs a JavaScript Date from the date-only value, which treats it as UTC before local formatting.
 
 **Decision:** keep the failing date assertion because the source value is a calendar date, not an instant. Product code should format the date without timezone conversion rather than changing the expected result to Jan 14.
 
@@ -40,9 +40,11 @@ I added focused API coverage for assessment detail and narrative generation beca
 
 ## CI
 
-The baseline GitHub Actions run on the supplied repository completed with **5 passed / 2 failed**. The two failures were the empty-note API validation (expected 422, received 200) and the assessment date (expected Jan 15, rendered Jan 14). The workflow still uploaded Playwright artifacts and ran container logs/cleanup because those steps use if: always().
+The supplied repository baseline completed with **5 passed / 2 failed**. After the changes in this PR, GitHub Actions ran **12 tests: 10 passed / 2 failed**. All added tests and all refactored E2E tests passed; the only failures are the same two product findings above: empty-note API validation (expected 422, received 200) and the date-only UI shift (expected Jan 15, rendered Jan 14).
 
-This PR keeps that artifact behavior and changes PR execution to select tests from the changed files. Pushes to main still run the full suite. Infrastructure/config/seed changes map to __ALL__; unknown paths run a small API + UI smoke fallback instead of zero tests.
+The PR test-selection step completed successfully and selected **__ALL__** because this PR changes workflow/test-impact infrastructure, which is intentionally treated conservatively. Despite the Playwright failure, the workflow successfully uploaded the HTML report, screenshots/traces under test-results, and executed container logs/cleanup via if: always().
+
+PR execution otherwise selects tests from changed files. Pushes to main run the full suite. Infrastructure/config/seed changes map to __ALL__; unknown paths run a small API + UI smoke fallback instead of zero tests.
 
 ## PR impact
 
@@ -57,4 +59,4 @@ For example B (AssessmentList.tsx only), CI selects list/date/detail-navigation 
 
 ## Quality call
 
-I would **not merge the product and call the suite healthy yet**. The automation now gives better signal, but the two baseline failures represent unresolved product/API behavior rather than tests that should simply be made green. I would merge the QA/CI improvements only with those findings explicitly tracked and then fix or clarify the product contracts before requiring a fully green main branch.
+I would **not merge the product and call the suite healthy yet**. The automation now gives better signal, but the two reproducible failures represent unresolved product/API behavior rather than tests that should simply be made green. I would merge the QA/CI improvements only with those findings explicitly tracked and then fix or clarify the product contracts before requiring a fully green main branch.
