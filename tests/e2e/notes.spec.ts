@@ -2,8 +2,19 @@ import { test, expect } from '@playwright/test';
 
 test('adds a clinical note', async ({ page }) => {
   await page.goto('/assessments/asmt_001');
-  await page.getByPlaceholder('Add a clinical observation...').fill('Follow-up recommended');
+
+  const note = `Follow-up recommended ${Date.now()}`;
+  await page.getByPlaceholder('Add a clinical observation...').fill(note);
+
+  const noteResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/assessments/asmt_001/notes') &&
+      response.request().method() === 'POST',
+  );
+
   await page.getByRole('button', { name: 'Add Note' }).click();
-  await page.waitForTimeout(3000);
-  await expect(page.getByText('Follow-up recommended')).toBeVisible();
+  expect((await noteResponse).status()).toBe(200);
+
+  await expect(page.getByText(note)).toBeVisible();
+  await expect(page.getByPlaceholder('Add a clinical observation...')).toHaveValue('');
 });
