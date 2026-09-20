@@ -1,5 +1,62 @@
+# Exact production-code paths map to the tests that exercise their risk.
 backend/app/services/narrative_service.py:
+  - tests/api/narrative.spec.ts
   - tests/e2e/narrative.spec.ts
+
+backend/app/routers/assessments.py:
+  - tests/api/assessments.spec.ts
+  - tests/api/detail.spec.ts
+  - tests/api/notes.spec.ts
+  - tests/api/narrative.spec.ts
+  - tests/e2e/list.spec.ts
+  - tests/e2e/detail.spec.ts
+  - tests/e2e/notes.spec.ts
+  - tests/e2e/narrative.spec.ts
+
+backend/app/models/note.py:
+  - tests/api/notes.spec.ts
+  - tests/e2e/notes.spec.ts
+
+backend/app/models/assessment.py:
+  - tests/api/assessments.spec.ts
+  - tests/api/detail.spec.ts
+  - tests/e2e/list.spec.ts
+  - tests/e2e/detail.spec.ts
 
 frontend/src/pages/AssessmentList.tsx:
   - tests/e2e/list.spec.ts
+  - tests/e2e/date.spec.ts
+  - tests/e2e/detail.spec.ts
+
+frontend/src/pages/AssessmentDetail.tsx:
+  - tests/e2e/detail.spec.ts
+  - tests/e2e/notes.spec.ts
+  - tests/e2e/narrative.spec.ts
+
+frontend/src/components/assessment/NarrativeSection.tsx:
+  - tests/e2e/narrative.spec.ts
+
+frontend/src/components/assessment/ClinicalNotes.tsx:
+  - tests/e2e/notes.spec.ts
+
+frontend/src/services/api.ts:
+  - tests/api/assessments.spec.ts
+  - tests/api/detail.spec.ts
+  - tests/api/notes.spec.ts
+  - tests/api/narrative.spec.ts
+  - tests/e2e/list.spec.ts
+  - tests/e2e/detail.spec.ts
+  - tests/e2e/notes.spec.ts
+  - tests/e2e/narrative.spec.ts
+
+sample_data.json:
+  - __ALL__
+
+playwright.config.ts:
+  - __ALL__
+
+docker-compose.yml:
+  - __ALL__
+
+.github/workflows/playwright.yml:
+  - __ALL__
