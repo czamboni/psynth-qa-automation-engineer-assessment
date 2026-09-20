@@ -4,7 +4,7 @@
 
 - **Automated:** assessment-list API contract and filtering, assessment detail API, narrative API, the existing note-validation boundary, and the highest-value UI journeys (list, detail navigation, notes, narrative). I also made the inherited UI tests wait on observable application behavior instead of fixed sleeps.
 - **Skipped, and why:** exhaustive score-card rendering, search/filter permutations, visual testing, and deep PDF-content validation. They are lower value than the API/UI consistency and CI-selection risks within the suggested timebox.
-- **Residual risk:** PDF generation is only indirectly covered by the narrative flow exposing the PDF action; mutations use in-memory shared data; the suite is Chromium-only; and two inherited failures expose product behavior that should be resolved before treating the suite as green.
+- **Residual risk:** PDF generation is only indirectly covered by the narrative flow exposing the PDF action; mutations use in-memory shared data; the suite is Chromium-only; and two inherited failures expose product behavior that should be resolved or explicitly accepted before treating the suite as green.
 
 ## Existing automation
 
@@ -20,7 +20,7 @@ I added focused API coverage for assessment detail and narrative generation beca
 
 **Evidence:** both the supplied baseline and this PR's GitHub Actions run post an empty content value and expect 422, but the API returns 200. The NoteCreate model declares plain strings with no minimum length, while the UI independently prevents blank submissions.
 
-**Decision:** keep the failing API test. Weakening it to expect 200 would hide an API/UI consistency and data-quality risk. I would clarify the contract with the product/backend owner and, if blank notes are invalid as the UI indicates, add server-side validation.
+**Decision:** keep the failing API test for this assessment rather than weakening the assertion. In a production team, however, defect priority and CI blocking policy would be separate decisions. Because the normal UI prevents an empty note from being submitted, the team could reasonably accept the backend inconsistency as a known lower-priority defect depending on API exposure and business risk. If the defect were explicitly accepted but should not block unrelated delivery, I would consider marking the test as an expected failure and linking it to the tracked issue. That preserves the intended contract without allowing a known, deprioritized defect to keep the entire pipeline red indefinitely.
 
 ### 2. Date-only assessment values shift by one day in the UI
 
@@ -59,4 +59,4 @@ For example B (AssessmentList.tsx only), CI selects list/date/detail-navigation 
 
 ## Quality call
 
-I would **not merge the product and call the suite healthy yet**. The automation now gives better signal, but the two reproducible failures represent unresolved product/API behavior rather than tests that should simply be made green. I would merge the QA/CI improvements only with those findings explicitly tracked and then fix or clarify the product contracts before requiring a fully green main branch.
+I would **not merge the product and call the suite healthy yet**. The automation now gives better signal, but the two reproducible failures represent unresolved product/API behavior rather than tests that should simply be made green. For this assessment I keep those failures visible because failure investigation is part of the evidence. In a production workflow, I would not leave a quality gate red indefinitely for a known defect that the team has explicitly accepted: I would track the defect, agree its priority and blocking policy with the team, and, when appropriate, quarantine or mark the test as an expected failure without weakening its assertion. The QA/CI improvements can then move independently while the product contract is fixed or clarified.
