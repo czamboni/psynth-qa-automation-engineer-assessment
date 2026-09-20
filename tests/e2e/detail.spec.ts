@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-test('opens the first assessment', async ({ page }) => {
+test('opens Alex Thompson assessment from the list', async ({ page }) => {
   await page.goto('/assessments');
-  await page.locator('td.p-4.font-medium').first().waitFor();
-  await page.locator('table tbody tr td a').first().click();
-  await expect(page.locator('h1')).toContainText('Alex Thompson');
+
+  const alexRow = page.getByRole('row').filter({ hasText: 'Alex Thompson' });
+  await alexRow.getByRole('link', { name: 'View' }).click();
+
+  await expect(page).toHaveURL(/\/assessments\/asmt_001$/);
+  await expect(page.getByRole('heading', { name: 'Alex Thompson' })).toBeVisible();
 });
