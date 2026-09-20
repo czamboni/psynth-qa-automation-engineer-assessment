@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -39,8 +41,27 @@ jobs:
           docker compose logs
           exit 1
 
+      - name: Select PR tests
+        id: select
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          mapfile -t changed_files < <(git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD")
+          echo "Changed files:"
+          printf '  %s\n' "${changed_files[@]}"
+
+          selected="$(node scripts/select-tests.js "${changed_files[@]}")"
+          echo "Selected: $selected"
+          echo "specs=$selected" >> "$GITHUB_OUTPUT"
+
       - name: Run Playwright
-        run: npx playwright test
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" != "pull_request" || "${{ steps.select.outputs.specs }}" == "__ALL__" ]]; then
+            npx playwright test
+          else
+            npx playwright test ${{ steps.select.outputs.specs }}
+          fi
         env:
           BASE_URL: http://localhost:5173
           API_URL: http://localhost:8000
